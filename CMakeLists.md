@@ -14,7 +14,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 # 源文件定义
 aux_source_directory(src SRC_FILES)
 
-# 生成可执行文件或动态库
+# 生成可执行文件或库
 add_executable(main ${SRC_FILES})
 # 或
 add_library(detector SHARED ${SRC_FILES})
@@ -120,8 +120,100 @@ g++ -I /path/to/project/include ...
 | `include_directories(SYSTEM /usr/local/include)`                   | 声明为系统路径（警告更少）       | 第三方头文件                                 |
 
 扫描源文件
-扫描指定目录（src/）下所有 .c 或 .cpp 文件，
-并把它们的路径存进变量 SRC_FILES。
 ```
 aux_source_directory(src SRC_FILES)
 ```
+扫描指定目录（src/）下所有 .c 或 .cpp 文件，
+并把它们的路径存进变量 SRC_FILES。
+但它不会递归，不会区分目标
+可以使用
+```
+target_sources(main PRIVATE
+    main.cpp
+    src/detector.cpp
+    src/tracker.cpp
+)
+```
+更精确,更安全
+头文件同理
+```
+target_include_directories(main PUBLIC include)
+```
+## 可执行程序和库
+静态库,动态库,接口库
+```
+add_library(A STATIC a1.cpp a2.cpp)
+add_library(B SHARED b1.cpp b2.cpp b3.cpp)
+add_library(Config INTERFACE)//不生成实际文件,用来传播配置或者桥接外接库
+```
+可执行程序
+```
+add_executable(app main.cpp)
+```
+A,B,app可以用上述的target来更好的配置,以模块化
+## 链接
+库,可执行程序都要用链接,但由于主程序不会被调用,所以常用private
+```
+target_link_libraries(detector PUBLIC common)
+target_link_libraries(app PRIVATE detector)
+```
+## 外部库
+寻找外部库,用来给链接调用
+```
+find_package(OpenCV REQUIRED)
+target_link_libraries(app PRIVATE ${OpenCV_LIBS})
+```
+REQUIRED参数表示,找不到就报错
+可以设置最低版本要求，以及只要部分组件
+```
+find_package(OpenCV 4.2 REQUIRED COMPONENTS core imgproc highgui)
+```
+可以使用命名空间的方法(下划线是老式的用法)
+```
+find_package(OpenCV REQUIRED)
+
+target_link_libraries(app PRIVATE
+    OpenCV::Core
+    OpenCV::Imgproc
+)
+```
+## 安装
+可以指定make install安装的目录
+```
+install(TARGETS main DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+```
+## 变量
+**系统变量**
+例如HOME,PATH
+```
+$ENV{变量名}
+```
+使用set,手动转换为cmake变量
+```
+set(LOCAL_SDK $ENV{MX_SDK_HOME})
+```
+**cmake内置变量**
+例如
+```
+PROJECT_NAME
+PROJECT_SOURCE_DIR
+CMAKE_CURRENT_SOURCE_DIR
+CMAKE_BINARY_DIR
+CMAKE_RUNTIME_OUTPUT_DIRECTORY
+CMAKE_CXX_FLAGS_RELEASE
+CMAKE_BUILD_TYPE
+```
+直接使用
+```
+${CMAKE_CURRENT_SOURCE_DIR}
+```
+**自定义**
+自己定义变量
+```
+set(MODEL_PATH /home/user/model)
+```
+```
+${MODEL_PATH}
+```
+
+另外,cmake仅在读取变量名是使用`${A}`的形式(由名转换为值)

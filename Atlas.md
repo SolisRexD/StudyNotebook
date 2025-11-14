@@ -335,3 +335,9 @@ model = Model(modelPath=model_path, deviceId=device_id)
 # 执行推理  
 outputs = model.infer(input_tensors)
 ```
+## 编译
+atlas编译前，先设置环境变量
+```
+source {mxVison安装目录}/mxVision/set_env.sh
+```
+之后在使用cmake编译
