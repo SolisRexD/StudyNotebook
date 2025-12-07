@@ -1,19 +1,3 @@
-# 准备
-创建工作空间，在其中创建src目录，存放代码
-# 编译
-使用 catkin_make 命令，进行编译
-# 创建功能包
-```
-cd src
-catkin_create_pkg 自定义ROS包名 roscpp rospy std_msgs
-```
-创建功能包及其依赖
-
-最后还要通过
-```
-source ~/catkin_ws/devel/setup.bash
-```
-注册到系统环境(当前终端)
 # ROS通信
 ## 话题
 | 特性       | 描述                  |
