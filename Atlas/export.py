@@ -66,7 +66,9 @@ if __name__ == '__main__':
         # Checks
         onnx_model = onnx.load(f)  # load onnx model
         onnx.checker.check_model(onnx_model)  # check onnx model
-        LOGGER.info(onnx.helper.printable_graph(onnx_model.graph))  # print a human readable model
+        
+        # 保存为单一文件（将外部数据合并到模型中）
+        onnx.save_model(onnx_model, f, save_as_external_data=False)
         LOGGER.info('ONNX export success, saved as %s' % f)
     except Exception as e:
         LOGGER.error('ONNX export failure: %s' % e)
